@@ -53,7 +53,7 @@ BLENDER_BIN_DEFAULT = "/home/ky/Desktop/blender-5.1.2-linux-x64/blender"
 # 3D-Front 设计 JSON 输入：默认指向示例布局（你指定的 0a8d471a…json）。
 # 传入文件或目录均可；可经 --input 覆盖。
 _INPUT_DEFAULT = str(_PROJECT_ROOT / "3D_Front_example" /
-                     "0a9f5311-49e1-414c-ba7b-b42a171459a3.json")
+                     "0a17c68b-b74d-4d81-afe4-bc2ed405f0ec.json")
 
 # 输出目录：top2down 图片与（可选）整屋 .blend 落此处
 _OUTPUT_DEFAULT = str(_PROJECT_ROOT / "output" / "top2down")
@@ -271,6 +271,33 @@ def _world_bbox(objects):
                 min_co[i] = min(min_co[i], co[i])
                 max_co[i] = max(max_co[i], co[i])
     return (min_co, max_co) if found else None
+
+
+def _imported_local_bbox(objs):
+    """计算一组（刚导入、root 仍为单位阵时）物体的局部包围盒尺寸 (dx, dy, dz)。
+
+    在 _import_furniture 里于应用 world_matrix 之前调用：此时 root 是新建的
+    空物体（未变换），子物体以 keep_transform 挂到 root 下，其 matrix_world
+    即导入时的变换，故这里得到的就是「模型自身（Y-up）」的局部尺寸，可直接
+    与 3D-Front 家具的 size 字段对照。
+    """
+    from mathutils import Vector
+    import math
+    min_co = Vector((math.inf, math.inf, math.inf))
+    max_co = Vector((-math.inf, -math.inf, -math.inf))
+    found = False
+    for o in objs:
+        if o.type != 'MESH':
+            continue
+        found = True
+        for corner in o.bound_box:
+            co = o.matrix_world @ Vector(corner)
+            for i in range(3):
+                min_co[i] = min(min_co[i], co[i])
+                max_co[i] = max(max_co[i], co[i])
+    if not found:
+        return None
+    return (max_co.x - min_co.x, max_co.y - min_co.y, max_co.z - min_co.z)
 
 
 def _normalize_to_origin(objects):
@@ -596,11 +623,16 @@ def _fix_furniture_textures(new_objs, model_folder):
     return (repairs, img_nodes, len(img_files) > 0)
 
 
-def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg):
+def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg,
+                      size=None):
     """导入一件 3D-FUTURE 家具并摆到 world_matrix，返回根 Empty 或 None。
 
     model_id 即家具的 jid（uuid 哈希）。若该文件夹不存在，再退化尝试
     序号 seq（<dataset>/<seq>/raw_model.obj）。
+    size: 3D-Front 家具的 size 字段（[x, y, z]，米，Y-up，y 为高）。
+      用于在导入后按元数据重新缩放模型，修正「3D-FUTURE 模型以厘米/毫米建
+      模、导入后被放大几十~上百倍」导致的巨大家具问题——这也是部分家具
+      「盖住整个屏幕」的根因。
     """
     from mathutils import Euler
     candidates = [model_id]
@@ -659,7 +691,28 @@ def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg
     bpy.context.view_layer.objects.active = root
     bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 
+    # 在应用 world_matrix 之前测局部包围盒（此时 root 仍为单位阵、子物体保留导入
+    # 变换，其 matrix_world 即模型自身 Y-up 局部坐标），以便与 size 字段对照。
+    dims = None
+    if size is not None and any(s > 1e-6 for s in size):
+        dims = _imported_local_bbox(new_objs)
+
     root.matrix_world = world_matrix
+
+    # —— 按 3D-Front 的 size 元数据校正模型原生单位（修复巨大家具）——
+    # 部分 3D-FUTURE raw_model.obj 以厘米/毫米建模（而非米），直接导入会被放大
+    # 几十~上百倍而铺满屏幕。这里用 root.scale 叠加一层局部缩放：把模型在 Y-up
+    # 局部空间的尺寸缩放到与 size 一致（world_matrix 的 Y-up→Z-up 重映射在之后
+    # 仍然成立，最终尺寸即 size）。
+    # 仅当 size 与导入模型尺寸均有意义（>0）时才应用，避免窗户/门等 size=[0,0,0]
+    # 或退化模型被错误缩放。
+    if dims is not None and all(d > 1e-6 for d in dims):
+        root.scale = (size[0] / dims[0],
+                      size[1] / dims[1],
+                      size[2] / dims[2])
+        print(f"[构建器] 家具 {model_id}: 按 size 重新缩放 "
+              f"({dims[0]:.3f}x{dims[1]:.3f}x{dims[2]:.3f} "
+              f"-> {size[0]:.3f}x{size[1]:.3f}x{size[2]:.3f})")
     return root
 
 
@@ -729,6 +782,7 @@ def _parse_threefront(json_path, keep_mesh_types, category_info,
                                             skip_cats, skip_ids)
                 room_entry["furnitures"].append(
                     {"jid": jid, "seq": seq, "M": world_M,
+                     "size": fur.get("size", [1.0, 1.0, 1.0]),
                      "skip": skip, "reason": reason})
         rooms_out.append(room_entry)
     return rooms_out, material_lookup
@@ -1049,7 +1103,8 @@ def main_builder(args):
                 world_M = fur["M"]
                 root = _import_furniture(fur["jid"], fur["seq"], world_M,
                                          os.path.abspath(args.dataset),
-                                         room_coll, cfg)
+                                         room_coll, cfg,
+                                         size=fur.get("size"))
                 if root is not None:
                     room_objects.append(root)
                     placed += 1

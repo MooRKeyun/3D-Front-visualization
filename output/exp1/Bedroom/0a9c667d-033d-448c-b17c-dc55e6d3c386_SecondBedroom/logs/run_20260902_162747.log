@@ -1,0 +1,62 @@
+[启动器] 命令: /home/ky/Desktop/blender-5.1.2-linux-x64/blender -b --python /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/visualization/threefront_renderer.py -- --input /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9c667d-033d-448c-b17c-dc55e6d3c386.json --output-dir /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/exp1/Bedroom/0a9c667d-033d-448c-b17c-dc55e6d3c386_SecondBedroom --room-filter SecondBedroom --dataset /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model --texture-root /TODO/替换为你的/3D-Front-texture/根目录 --category-json /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/model_info.json --skip-categories 吊灯,chandelier,ceiling lamp,pendant,ceiling light, Lighting --skip-model-ids  --furniture-scale 1.0 --roughness 1.0 --pre-rot 0.0 0.0 0.0 --keep-mesh-types Floor --render-engine cycles --render-resolution 1024 --topdown-margin 0.08 --render-samples 128 --topdown-scope scene --no-save-blend
+[启动器] 时间: 20260902_162747
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.250  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.276  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.276  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.276  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.291  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.291  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.291  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.291  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.301  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.301  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.301  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.301  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.301  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.312  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.336  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+00:04.427  render           | Saved: '/home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/exp1/Bedroom/0a9c667d-033d-448c-b17c-dc55e6d3c386_SecondBedroom/0a9c667d-033d-448c-b17c-dc55e6d3c386_SecondBedroom_topdown.png'
+[构建器] input  = /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9c667d-033d-448c-b17c-dc55e6d3c386.json
+[构建器] dataset= /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model
+
+[构建器] === 处理 0a9c667d-033d-448c-b17c-dc55e6d3c386.json ===
+  [跳过房间] type=Hallway idx=0: 不匹配 --room-filter='SecondBedroom'
+  [跳过房间] type=DiningRoom idx=1: 不匹配 --room-filter='SecondBedroom'
+  [跳过房间] type=MasterBedroom idx=2: 不匹配 --room-filter='SecondBedroom'
+  [跳过房间] type=LivingRoom idx=3: 不匹配 --room-filter='SecondBedroom'
+[构建器] 家具 22635fd5-4e77-4fc4-bf0e-1cf06e4da859: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 22635fd5-4e77-4fc4-bf0e-1cf06e4da859: 按 size 重新缩放 (1.620x0.510x2.350 -> 1.620x0.510x2.350)
+[构建器] 家具 8ee760c1-7955-4a84-9002-cbfe92e64207: 贴图节点 3 个, 已修复 0 个
+[构建器] 家具 8ee760c1-7955-4a84-9002-cbfe92e64207: 按 size 重新缩放 (1.635x0.791x0.794 -> 1.636x0.791x0.794)
+[构建器] 家具 4d4d646d-db1a-44e9-a33d-bcd531324e42: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 4d4d646d-db1a-44e9-a33d-bcd531324e42: 按 size 重新缩放 (0.337x0.337x0.651 -> 0.302x0.302x0.651)
+[构建器] 警告：找不到家具模型，已跳过 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/a3017175-01da-4bbb-a3f4-aa896e3fa604/raw_model.obj, /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/9736/raw_model.obj
+[构建器] 家具 82081e35-5a53-4e68-b0d8-e1f313cb43f4: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 82081e35-5a53-4e68-b0d8-e1f313cb43f4: 按 size 重新缩放 (0.683x0.318x1.586 -> 0.602x0.287x1.600)
+[构建器] 家具 f0b346ac-4c07-4fde-8eff-9c3537304525: 贴图节点 6 个, 已修复 0 个
+[构建器] 家具 f0b346ac-4c07-4fde-8eff-9c3537304525: 按 size 重新缩放 (2.138x2.188x1.524 -> 2.142x2.188x1.524)
+  [房间] type=SecondBedroom idx=4: 地板 1 件, 家具已放 5, 跳过 1
+  [跳过房间] type=Kitchen idx=5: 不匹配 --room-filter='SecondBedroom'
+  [跳过房间] type=Bathroom idx=6: 不匹配 --room-filter='SecondBedroom'
+  [跳过房间] type=OtherRoom idx=7: 不匹配 --room-filter='SecondBedroom'
+[构建器] 渲染 0a9c667d-033d-448c-b17c-dc55e6d3c386_SecondBedroom_topdown.png（引擎=CYCLES）…
+
+[构建器] 完成：处理 1 个 JSON，共 8 个房间，渲染 1 张 top2down。
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 02:18:37)
+OBJ import of 'raw_model.obj' took 21.85 ms
+OBJ import of 'raw_model.obj' took 15.62 ms
+OBJ import of 'raw_model.obj' took 10.04 ms
+OBJ import of 'raw_model.obj' took 6.76 ms
+OBJ import of 'raw_model.obj' took 15.00 ms
+
+Blender quit
