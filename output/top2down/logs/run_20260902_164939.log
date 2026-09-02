@@ -1,0 +1,83 @@
+[启动器] 命令: /home/ky/Desktop/blender-5.1.2-linux-x64/blender --python /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/visualization/threefront_renderer.py -- --input /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a17c68b-b74d-4d81-afe4-bc2ed405f0ec.json --output-dir /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down --room-filter LivingDiningRoom --dataset /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model --texture-root /TODO/替换为你的/3D-Front-texture/根目录 --category-json /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/model_info.json --furniture-library /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/furniture_library.json --skip-categories 吊灯,chandelier,ceiling lamp,pendant,ceiling light, Lighting --skip-model-ids  --furniture-scale 1.0 --roughness 1.0 --pre-rot 0.0 0.0 0.0 --keep-mesh-types Floor --render-engine cycles --render-resolution 1024 --topdown-margin 0.08 --render-samples 128 --topdown-scope auto
+[启动器] 时间: 20260902_164939
+00:00.785  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.785  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.785  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.801  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.812  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.812  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.813  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.813  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.813  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.816  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.816  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.824  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.824  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.831  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.831  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.837  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.837  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.843  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.843  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.863  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+00:03.982  render           | Saved: '/home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down/0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_LivingDiningRoom_topdown.png'
+[构建器] input  = /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a17c68b-b74d-4d81-afe4-bc2ed405f0ec.json
+[构建器] dataset= /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model
+
+[构建器] === 处理 0a17c68b-b74d-4d81-afe4-bc2ed405f0ec.json ===
+  [提示] 家具 jid=a3017175 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=ff958559 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=e37b20db 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=3d488b85 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=7a07c30a 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=e56ea046 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [提示] 家具 jid=c5fd078a 无 size 且尺寸库未收录，无法按真实尺寸校正（可能保留原生单位）。
+  [跳过房间] type=Balcony idx=0: 不匹配 --room-filter='LivingDiningRoom'
+[构建器] 警告：找不到家具模型，已跳过 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/e37b20db-f86f-493f-a758-d8c0ac96e228/raw_model.obj, /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/5161/raw_model.obj
+[构建器] 家具 c46211a7-2f21-4bed-95ed-30d39ad2a59d: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 c46211a7-2f21-4bed-95ed-30d39ad2a59d: 按 size 重新缩放 (4.200x0.520x2.780 -> 4.200x2.780x0.520)
+[构建器] 家具 4e269ffb-09ac-4244-a680-db65bbc33980: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 4e269ffb-09ac-4244-a680-db65bbc33980: 按 size 重新缩放 (3.970x2.386x0.981 -> 3.970x0.981x2.386)
+[构建器] 家具 6d8cb6d1-1ed9-4af9-9249-ede2906b0834: 贴图节点 2 个, 已修复 0 个
+[构建器] 家具 6d8cb6d1-1ed9-4af9-9249-ede2906b0834: 按 size 重新缩放 (0.775x0.469x0.310 -> 0.775x0.310x0.469)
+[构建器] 家具 5248bb82-aece-4429-9b83-3940578043e1: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 5248bb82-aece-4429-9b83-3940578043e1: 按 size 重新缩放 (1.993x0.904x0.940 -> 1.992x0.940x0.904)
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 贴图节点 2 个, 已修复 0 个
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 按 size 重新缩放 (0.524x0.575x0.968 -> 0.524x0.968x0.575)
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 贴图节点 2 个, 已修复 0 个
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 按 size 重新缩放 (0.524x0.575x0.968 -> 0.524x0.968x0.575)
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 贴图节点 2 个, 已修复 0 个
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 按 size 重新缩放 (0.524x0.575x0.968 -> 0.524x0.968x0.575)
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 贴图节点 2 个, 已修复 0 个
+[构建器] 家具 00883cfc-9ec8-4494-bc40-6c768d4ed9d9: 按 size 重新缩放 (0.524x0.575x0.968 -> 0.524x0.968x0.575)
+[构建器] 警告：找不到家具模型，已跳过 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/3d488b85-19bc-4a6d-a5c5-eca6a9e10e13/raw_model.obj, /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/2021159106492909492992/raw_model.obj
+[构建器] 家具 7a07c30a-d0da-3f97-9141-41a6d4fa16ba: 贴图节点 1 个, 已修复 0 个
+  [跳过家具] model=470c931b-30d9-4817-8040-4bca427ee2aa 原因=super-category:Lighting
+  [跳过家具] model=9b69e3d4-bfcc-4e59-bf6b-7e7cc052eac0 原因=super-category:Lighting
+  [房间] type=LivingDiningRoom idx=1: 地板 1 件, 家具已放 9, 跳过 4
+  [跳过房间] type=Kitchen idx=2: 不匹配 --room-filter='LivingDiningRoom'
+  [跳过房间] type=StorageRoom idx=3: 不匹配 --room-filter='LivingDiningRoom'
+  [跳过房间] type=Bathroom idx=4: 不匹配 --room-filter='LivingDiningRoom'
+  [跳过房间] type=Bedroom idx=5: 不匹配 --room-filter='LivingDiningRoom'
+[构建器] 渲染 0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_LivingDiningRoom_topdown.png（引擎=CYCLES）…
+Info: Saved as "0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_furnished.blend"
+[构建器] 已保存场景 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down/0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_furnished.blend
+
+[构建器] 完成：处理 1 个 JSON，共 6 个房间，渲染 1 张 top2down。
+00:09.836  blend            | Saved session recovery to "/tmp/quit.blend"
+OBJ import of 'raw_model.obj' took 9.98 ms
+OBJ import of 'raw_model.obj' took 14.55 ms
+OBJ import of 'raw_model.obj' took 0.52 ms
+OBJ import of 'raw_model.obj' took 0.47 ms
+OBJ import of 'raw_model.obj' took 6.62 ms
+OBJ import of 'raw_model.obj' took 5.31 ms
+OBJ import of 'raw_model.obj' took 5.17 ms
+OBJ import of 'raw_model.obj' took 5.25 ms
+OBJ import of 'raw_model.obj' took 1.39 ms
+
+Blender quit

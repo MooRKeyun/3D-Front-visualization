@@ -63,3 +63,15 @@ Info: Saved as "0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_furnished.blend"
 [构建器] 已保存场景 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down/0a17c68b-b74d-4d81-afe4-bc2ed405f0ec_furnished.blend
 
 [构建器] 完成：处理 1 个 JSON，共 6 个房间，渲染 1 张 top2down。
+17:36.046  blend            | Saved session recovery to "/tmp/quit.blend"
+OBJ import of 'raw_model.obj' took 10.07 ms
+OBJ import of 'raw_model.obj' took 17.72 ms
+OBJ import of 'raw_model.obj' took 0.55 ms
+OBJ import of 'raw_model.obj' took 0.39 ms
+OBJ import of 'raw_model.obj' took 5.93 ms
+OBJ import of 'raw_model.obj' took 5.31 ms
+OBJ import of 'raw_model.obj' took 5.05 ms
+OBJ import of 'raw_model.obj' took 5.20 ms
+OBJ import of 'raw_model.obj' took 1.35 ms
+
+Blender quit

@@ -107445,8 +107445,8 @@
     ],
     "variants": {
       "width": 4.2002,
-      "height": 2.78,
-      "depth": 0.52
+      "height": 0.52,
+      "depth": 2.78
     }
   },
   {
@@ -156280,8 +156280,8 @@
     ],
     "variants": {
       "width": 3.9703,
-      "height": 0.9806,
-      "depth": 2.3859
+      "height": 2.3859,
+      "depth": 0.9806
     }
   },
   {

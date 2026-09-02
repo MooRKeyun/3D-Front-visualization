@@ -69,6 +69,11 @@ _TEXTURE_ROOT_DEFAULT = "/TODO/替换为你的/3D-Front-texture/根目录"
 # 不提供时无法按类别过滤（仅能用 --skip-model-ids 显式跳过）。
 _CATEGORY_JSON_DEFAULT = "model_info.json"
 
+# 家具真实尺寸库（furniture_library.json）：{model_id: {width, height, depth}}（米）。
+# 当 3D-Front 设计 JSON 的家具项缺失 size 字段时，作为「按真实尺寸重新缩放」的回退目标。
+# 默认指向本仓库内的 furniture_library.json（仅当前文件夹，符合不访问外部目录的约束）。
+_FURNITURE_LIBRARY_DEFAULT = "furniture_library.json"
+
 # 默认跳过的家具语义（子串匹配，大小写不敏感）
 # 覆盖中英文常见「吊灯/吊灯类」表述：吊灯、chandelier、ceiling lamp、
 # pendant（Pendant Light）、ceiling light。
@@ -118,6 +123,10 @@ def make_parser():
                    help="3D-FUTURE 数据集根目录（<model_id>/raw_model.obj）")
     p.add_argument("--texture-root", default=_TEXTURE_ROOT_DEFAULT,
                    help="3D-Front 贴图根目录（material['texture'] 非空时查找图片）")
+    p.add_argument("--furniture-library", default=_FURNITURE_LIBRARY_DEFAULT,
+                   help="家具真实尺寸库 furniture_library.json（按 jid 查 width/height/"
+                        "depth）。当 3D-Front 设计 JSON 的家具缺 size 字段时（如 "
+                        "0a17c68b 的 LivingDiningRoom），用作按真实尺寸校正模型的回退目标。")
     p.add_argument("--category-json", default=_CATEGORY_JSON_DEFAULT,
                    help="3D-FUTURE model_info.json（model_id -> category），用于按类跳过家具；"
                         "若传入目录则自动在其中查找 model_info*.json")
@@ -193,6 +202,7 @@ def main_launcher(args):
         "--dataset", os.path.abspath(args.dataset),
         "--texture-root", os.path.abspath(args.texture_root),
         "--category-json", os.path.abspath(args.category_json),
+        "--furniture-library", os.path.abspath(args.furniture_library),
         "--skip-categories", args.skip_categories,
         "--skip-model-ids", args.skip_model_ids,
         "--furniture-scale", str(args.furniture_scale),
@@ -342,9 +352,15 @@ def _compose_matrix(pos, rot, scale):
     t = Matrix.Translation(Vector((pos[0], -pos[2], pos[1])))
     q = Quaternion((rot[3], rot[0], -rot[2], rot[1]))
     r = q.to_matrix().to_4x4()
-    s = (Matrix.Scale(scale[0], 4, (1, 0, 0)) @
-         Matrix.Scale(scale[2], 4, (0, 1, 0)) @
-         Matrix.Scale(scale[1], 4, (0, 0, 1)))
+    # 3D-Front scale (sx, sy, sz) -> Blender (sx, sz, sy)（见上方分量重映射说明）。
+    # 个别家具（如 0a17c68b 的沙发）scale 某分量为负数，这是 3D-Front 的「沿轴反射/
+    # 镜像」写法。负缩放会让 Blender 物体出现法线反向、翻面（视觉上像绕自身轴转
+    # 180°），故此处取绝对值，仅保留尺寸、丢弃镜像意图，使翻转后几何法线正确、
+    # 朝向与房间内其它家具一致。
+    ax, ay, az = (abs(scale[0]), abs(scale[2]), abs(scale[1]))
+    s = (Matrix.Scale(ax, 4, (1, 0, 0)) @
+         Matrix.Scale(ay, 4, (0, 1, 0)) @
+         Matrix.Scale(az, 4, (0, 0, 1)))
     return t @ r @ s
 
 
@@ -400,6 +416,43 @@ def _load_category_info(path):
                 combined = " / ".join(p for p in (super_cat, cat) if p)
                 out[str(mid)] = str(combined)
     return out or None
+
+
+def _load_furniture_library(path):
+    """加载 furniture_library.json -> {model_id: (width, height, depth)}（均为米）。
+
+    作为「按真实尺寸重新缩放」的回退目标：当 3D-Front 设计 JSON 的家具项缺失
+    size 字段时（如 0a17c68b 的 LivingDiningRoom 家具 size=None），用本库里记录的
+    该 jid 真实尺寸来校正导入模型（解决 cm/mm 原生单位导致的巨大家具问题）。
+    文件缺失或读取失败则返回空字典（不致命）。
+    """
+    if not path:
+        return {}
+    path = os.path.abspath(path)
+    if not os.path.exists(path):
+        print(f"[构建器] 提示：家具尺寸库不存在 {path}，"
+              f"缺失 size 的家具将无法按真实尺寸校正。")
+        return {}
+    try:
+        data = json.load(open(path, encoding="utf-8"))
+    except Exception as e:
+        print(f"[构建器] 警告：无法读取家具尺寸库 {path}: {e}")
+        return {}
+    out = {}
+    for e in data:
+        if not isinstance(e, dict):
+            continue
+        mid = str(e.get("id") or e.get("model_id") or "")
+        if not mid:
+            continue
+        v = e.get("variants") or {}
+        w = v.get("width") or v.get("Width")
+        h = v.get("height") or v.get("Height")
+        dpt = v.get("depth") or v.get("Depth")
+        if w is None or h is None or dpt is None:
+            continue
+        out[mid] = (float(w), float(h), float(dpt))
+    return out
 
 
 def _should_skip(model_id, category_info, skip_cats, skip_ids):
@@ -693,11 +746,27 @@ def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg
 
     # 在应用 world_matrix 之前测局部包围盒（此时 root 仍为单位阵、子物体保留导入
     # 变换，其 matrix_world 即模型自身 Y-up 局部坐标），以便与 size 字段对照。
-    dims = None
-    if size is not None and any(s > 1e-6 for s in size):
-        dims = _imported_local_bbox(new_objs)
+    dims = _imported_local_bbox(new_objs)
 
     root.matrix_world = world_matrix
+
+    # —— 超尺寸兜底：仅在「无法按 size 校正」时生效。
+    # 若没有可用的 size 目标（缺失 size 且尺寸库也未收录），而导入模型任一边长 > 10m，
+    # 则判定为原生单位异常（cm/mm 被放大），直接不摆放，避免盖住整个房间/屏幕。
+    # 注意：若 size 目标存在，则优先走下方「按 size 重缩放」（即使导入时达上百米也会
+    # 被缩回正确米制），不应在此被跳过。
+    can_rescale = (size is not None and any(s > 1e-6 for s in size)
+                   and dims is not None and all(d > 1e-6 for d in dims))
+    if (not can_rescale) and dims is not None and max(dims) > 10.0:
+        print(f"[构建器] 警告：家具 {model_id} 导入尺寸超限 "
+              f"({dims[0]:.2f}x{dims[1]:.2f}x{dims[2]:.2f} m > 10m)，"
+              f"且无 size 可校正，判定异常，取消摆放。")
+        for o in new_objs:
+            if o.name in bpy.data.objects:
+                bpy.data.objects.remove(o, do_unlink=True)
+        if root.name in bpy.data.objects:
+            bpy.data.objects.remove(root, do_unlink=True)
+        return None
 
     # —— 按 3D-Front 的 size 元数据校正模型原生单位（修复巨大家具）——
     # 部分 3D-FUTURE raw_model.obj 以厘米/毫米建模（而非米），直接导入会被放大
@@ -706,7 +775,7 @@ def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg
     # 仍然成立，最终尺寸即 size）。
     # 仅当 size 与导入模型尺寸均有意义（>0）时才应用，避免窗户/门等 size=[0,0,0]
     # 或退化模型被错误缩放。
-    if dims is not None and all(d > 1e-6 for d in dims):
+    if can_rescale:
         root.scale = (size[0] / dims[0],
                       size[1] / dims[1],
                       size[2] / dims[2])
@@ -717,10 +786,12 @@ def _import_furniture(model_id, seq, world_matrix, dataset_root, collection, cfg
 
 
 def _parse_threefront(json_path, keep_mesh_types, category_info,
-                      skip_cats, skip_ids, dataset_root):
+                      skip_cats, skip_ids, dataset_root, furniture_library=None):
     """解析 3D-Front JSON，返回房间列表（每间含 floor meshes 与 furniture）。
 
-    每个 furniture 项已解析出 model_id、是否跳过、以及 world 矩阵。
+    每个 furniture 项已解析出 model_id、是否跳过、world 矩阵，以及用于「按真实尺寸
+    重新缩放」的 size 目标（米）：优先用 3D-Front 家具项的 size 字段；缺失时回退到
+    furniture_library（按 jid 查 width/height/depth）；二者都无则记为 None（不缩放）。
     """
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -780,9 +851,23 @@ def _parse_threefront(json_path, keep_mesh_types, category_info,
                     continue
                 skip, reason = _should_skip(jid, category_info,
                                             skip_cats, skip_ids)
+                # 解析 size 目标（米，[x, y, z]，Y-up，y 为高）：
+                #   1) 优先 3D-Front 家具项自带的 size；
+                #   2) 缺失则回退 furniture_library 按 jid 查 (width, height, depth)；
+                #   3) 都无则 None —— _import_furniture 里不触发缩放。
+                size_fur = fur.get("size")
+                if size_fur and any(s > 1e-6 for s in size_fur):
+                    size_target = [float(s) for s in size_fur[:3]]
+                elif furniture_library and jid in furniture_library:
+                    size_target = list(furniture_library[jid])  # (w,h,d)
+                else:
+                    size_target = None
+                    if not (size_fur and any(s > 1e-6 for s in (size_fur or []))):
+                        print(f"  [提示] 家具 jid={jid[:8]} 无 size 且尺寸库未收录，"
+                              f"无法按真实尺寸校正（可能保留原生单位）。")
                 room_entry["furnitures"].append(
                     {"jid": jid, "seq": seq, "M": world_M,
-                     "size": fur.get("size", [1.0, 1.0, 1.0]),
+                     "size": size_target,
                      "skip": skip, "reason": reason})
         rooms_out.append(room_entry)
     return rooms_out, material_lookup
@@ -1031,6 +1116,9 @@ def main_builder(args):
     skip_cats = [s.strip() for s in args.skip_categories.split(",") if s.strip()]
     skip_ids = {s.strip() for s in args.skip_model_ids.split(",") if s.strip()}
     category_info = _load_category_info(os.path.abspath(args.category_json))
+    # 家具真实尺寸库（仅当前文件夹内）：用于缺失 size 字段时回退校正。
+    furniture_library = _load_furniture_library(
+        os.path.abspath(args.furniture_library))
 
     # 房间类型筛选：room 的 type 含任一子串（小写）才保留；空列表=全部房间。
     room_filters = [s.strip().lower() for s in (args.room_filter or "").split(",")
@@ -1067,7 +1155,7 @@ def main_builder(args):
         print(f"\n[构建器] === 处理 {Path(jf).name} ===")
         rooms, material_lookup = _parse_threefront(
             jf, keep_mesh_types, category_info, skip_cats, skip_ids,
-            os.path.abspath(args.dataset))
+            os.path.abspath(args.dataset), furniture_library)
 
         # 用一个集合隔离每个 JSON 的结果
         json_coll = bpy.data.collections.new(f"house_{stem}")

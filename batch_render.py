@@ -38,6 +38,7 @@ from visualization.threefront_renderer import (  # noqa: E402
     _DATASET_ROOT_DEFAULT,
     _TEXTURE_ROOT_DEFAULT,
     _CATEGORY_JSON_DEFAULT,
+    _FURNITURE_LIBRARY_DEFAULT,
     _slug,
 )
 
@@ -92,6 +93,7 @@ def _build_argv(driver, json_path, out_dir, room_filter):
         "--dataset", driver.dataset,
         "--texture-root", driver.texture_root,
         "--category-json", driver.category_json,
+        "--furniture-library", os.path.abspath(driver.furniture_library),
         "--room-filter", room_filter,       # 精确房间类型，保证只渲染该间
         "--render-engine", driver.render_engine,
         "--render-resolution", str(driver.render_resolution),
@@ -134,6 +136,8 @@ def main():
                    help="3D-Front 贴图根目录。")
     p.add_argument("--category-json", default=_CATEGORY_JSON_DEFAULT,
                    help="model_info.json（按 super-category 过滤吊灯等）。")
+    p.add_argument("--furniture-library", default=_FURNITURE_LIBRARY_DEFAULT,
+                   help="furniture_library.json（缺 size 时按真实尺寸回退校正模型）。")
     p.add_argument("--render-engine", default="cycles",
                    choices=["eevee", "workbench", "cycles"], help="渲染引擎。")
     p.add_argument("--render-resolution", type=int, default=1024,
