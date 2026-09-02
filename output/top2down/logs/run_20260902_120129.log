@@ -1,0 +1,70 @@
+[启动器] 命令: /home/ky/Desktop/blender-5.1.2-linux-x64/blender --python /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/visualization/threefront_renderer.py -- --input /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9f5311-49e1-414c-ba7b-b42a171459a3.json --output-dir /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down --room-filter MasterBedroom --dataset /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model --texture-root /TODO/替换为你的/3D-Front-texture/根目录 --category-json /TODO/替换为你的/3D-FUTURE-model_info.json --skip-categories 吊灯,chandelier,ceiling lamp,pendant,ceiling light, Lighting --skip-model-ids  --furniture-scale 1.0 --roughness 1.0 --pre-rot 0.0 0.0 0.0 --keep-mesh-types Floor --render-engine cycles --render-resolution 1024 --topdown-margin 0.08 --render-samples 128
+[启动器] 时间: 20260902_120129
+00:00.798  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.799  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.799  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.799  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.799  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.799  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.821  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.821  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.821  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.828  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.834  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.834  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.834  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.844  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.844  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.844  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.852  io.obj           | WARNING MTL texture map type not supported: 'map_Ka ./texture.png'
+00:00.872  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+00:03.163  render           | Saved: '/home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down/0a9f5311-49e1-414c-ba7b-b42a171459a3_MasterBedroom_5_topdown.png'
+[构建器] input  = /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9f5311-49e1-414c-ba7b-b42a171459a3.json
+[构建器] dataset= /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model
+[构建器] 警告：category 文件不存在 /TODO/替换为你的/3D-FUTURE-model_info.json，无法按类别过滤家具。
+
+[构建器] === 处理 0a9f5311-49e1-414c-ba7b-b42a171459a3.json ===
+  [跳过房间] type=Kitchen idx=0: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=Bathroom idx=1: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=LivingDiningRoom idx=2: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=SecondBedroom idx=3: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=Balcony idx=4: 不匹配 --room-filter='MasterBedroom'
+[构建器] 家具 8042d0c4-443a-427a-96ee-1fa4fb261da6: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 5e4c8a81-79dd-43c2-a117-f3b9bda9e560: 贴图节点 1 个, 已修复 0 个
+[构建器] 家具 a4876bad-812f-492c-9c0e-35293918aa31: 贴图节点 9 个, 已修复 0 个
+[构建器] 家具 7be78e99-5ace-466f-84bf-e4509dabebb3: 贴图节点 3 个, 已修复 0 个
+[构建器] 家具 7be78e99-5ace-466f-84bf-e4509dabebb3: 贴图节点 3 个, 已修复 0 个
+[构建器] 家具 55530170-18d0-4475-b7c6-17918b7ad7b1: 贴图节点 1 个, 已修复 0 个
+[构建器] 警告：找不到家具模型，已跳过 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/2c8e8487-63f8-4b5a-a88e-b526db421f27/raw_model.obj, /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model/11182/raw_model.obj
+  [房间] type=MasterBedroom idx=5: 地板 2 件, 家具已放 6, 跳过 1
+[构建器] 渲染 0a9f5311-49e1-414c-ba7b-b42a171459a3_MasterBedroom_5_topdown.png（引擎=CYCLES）…
+  [跳过房间] type=Aisle idx=6: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=OtherRoom idx=7: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=OtherRoom idx=8: 不匹配 --room-filter='MasterBedroom'
+  [跳过房间] type=OtherRoom idx=9: 不匹配 --room-filter='MasterBedroom'
+Info: Saved as "0a9f5311-49e1-414c-ba7b-b42a171459a3_furnished.blend"
+[构建器] 已保存场景 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/top2down/0a9f5311-49e1-414c-ba7b-b42a171459a3_furnished.blend
+
+[构建器] 完成：处理 1 个 JSON，共 10 个房间，渲染 1 张 top2down。
+00:39.389  blend            | Saved session recovery to "/tmp/quit.blend"
+OBJ import of 'raw_model.obj' took 25.24 ms
+OBJ import of 'raw_model.obj' took 8.21 ms
+OBJ import of 'raw_model.obj' took 1.74 ms
+OBJ import of 'raw_model.obj' took 8.56 ms
+OBJ import of 'raw_model.obj' took 8.19 ms
+OBJ import of 'raw_model.obj' took 4.21 ms
+
+Blender quit
