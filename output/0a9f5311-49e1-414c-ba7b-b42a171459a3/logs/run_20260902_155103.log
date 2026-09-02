@@ -1,0 +1,27 @@
+[启动器] 命令: /home/ky/Desktop/blender-5.1.2-linux-x64/blender -b --python /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/visualization/threefront_renderer.py -- --input /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9f5311-49e1-414c-ba7b-b42a171459a3.json --output-dir /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/0a9f5311-49e1-414c-ba7b-b42a171459a3 --room-filter OtherRoom --dataset /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model --texture-root /TODO/替换为你的/3D-Front-texture/根目录 --category-json /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/model_info.json --skip-categories 吊灯,chandelier,ceiling lamp,pendant,ceiling light, Lighting --skip-model-ids  --furniture-scale 1.0 --roughness 1.0 --pre-rot 0.0 0.0 0.0 --keep-mesh-types Floor --render-engine cycles --render-resolution 1024 --topdown-margin 0.08 --render-samples 128 --topdown-scope scene
+[启动器] 时间: 20260902_155103
+00:00.269  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+00:03.016  render           | Saved: '/home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/0a9f5311-49e1-414c-ba7b-b42a171459a3/0a9f5311-49e1-414c-ba7b-b42a171459a3_OtherRoom_topdown.png'
+[构建器] input  = /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/3D_Front_example/0a9f5311-49e1-414c-ba7b-b42a171459a3.json
+[构建器] dataset= /home/ky/Experiments/1+1+1/Interior design/LAYRA/3d-future-model/3D-FUTURE-model
+
+[构建器] === 处理 0a9f5311-49e1-414c-ba7b-b42a171459a3.json ===
+  [跳过房间] type=Kitchen idx=0: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=Bathroom idx=1: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=LivingDiningRoom idx=2: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=SecondBedroom idx=3: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=Balcony idx=4: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=MasterBedroom idx=5: 不匹配 --room-filter='OtherRoom'
+  [跳过房间] type=Aisle idx=6: 不匹配 --room-filter='OtherRoom'
+  [房间] type=OtherRoom idx=7: 地板 0 件, 家具已放 0, 跳过 0
+  [房间] type=OtherRoom idx=7: 无可见物体，跳过渲染
+  [房间] type=OtherRoom idx=8: 地板 1 件, 家具已放 0, 跳过 0
+  [房间] type=OtherRoom idx=9: 地板 1 件, 家具已放 0, 跳过 0
+[构建器] 渲染 0a9f5311-49e1-414c-ba7b-b42a171459a3_OtherRoom_topdown.png（引擎=CYCLES）…
+Info: Saved as "0a9f5311-49e1-414c-ba7b-b42a171459a3_furnished.blend"
+[构建器] 已保存场景 -> /home/ky/Experiments/1+1+1/Interior design/LAYRA/3D_Front_visualization/output/0a9f5311-49e1-414c-ba7b-b42a171459a3/0a9f5311-49e1-414c-ba7b-b42a171459a3_furnished.blend
+
+[构建器] 完成：处理 1 个 JSON，共 10 个房间，渲染 1 张 top2down。
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 02:18:37)
+
+Blender quit

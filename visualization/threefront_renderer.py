@@ -64,9 +64,10 @@ _DATASET_ROOT_DEFAULT = "/TODO/替换为你的/3D-FUTURE-model/根目录"
 # 可选：3D-Front 贴图根目录（material['texture'] 非空的图片在此查找）。占位符！
 _TEXTURE_ROOT_DEFAULT = "/TODO/替换为你的/3D-Front-texture/根目录"
 
-# 可选：3D-FUTURE model_info.json（model_id -> category），用于识别「吊灯」等家具类型。
-# 占位符！不提供时无法按类别过滤吊灯（仅能用 --skip-model-ids 显式跳过）。
-_CATEGORY_JSON_DEFAULT = "/TODO/替换为你的/3D-FUTURE-model_info.json"
+# 3D-FUTURE model_info.json（model_id -> category / super-category），
+# 用于识别「吊灯/照明」等家具类型并取消放置。默认指向本仓库内的 model_info.json，
+# 不提供时无法按类别过滤（仅能用 --skip-model-ids 显式跳过）。
+_CATEGORY_JSON_DEFAULT = "model_info.json"
 
 # 默认跳过的家具语义（子串匹配，大小写不敏感）
 # 覆盖中英文常见「吊灯/吊灯类」表述：吊灯、chandelier、ceiling lamp、
@@ -156,6 +157,15 @@ def make_parser():
                    help="关闭 Cycles 降噪")
     p.add_argument("--transparent-bg", action="store_true",
                    help="背景透明（默认浅灰背景）")
+    # —— 俯视渲染范围 ——
+    p.add_argument("--topdown-scope", choices=["auto", "room", "scene"],
+                   default="auto",
+                   help="俯视渲染范围：'auto'(默认)=按保留房间数自动，总渲染成一张整屋图；"
+                        "'room'=每个保留房间各出一张；'scene'=所有保留房间合一张整屋图。"
+                        "auto 下输入整屋(多房间)→合一张，输入单房间(如 masterbedroom)→只那一张。")
+    p.add_argument("--no-origin-at-zero", dest="origin_at_zero",
+                   action="store_false",
+                   help="关闭坐标归零（默认每个渲染内容都平移到 (0,0) 起始的正坐标系）。")
     return p
 
 
@@ -193,6 +203,7 @@ def main_launcher(args):
         "--render-resolution", str(args.render_resolution),
         "--topdown-margin", str(args.topdown_margin),
         "--render-samples", str(args.render_samples),
+        "--topdown-scope", args.topdown_scope,
     ]
     if args.no_save_blend:
         cmd.append("--no-save-blend")
@@ -202,6 +213,8 @@ def main_launcher(args):
         cmd.append("--no-render-denoise")
     if args.transparent_bg:
         cmd.append("--transparent-bg")
+    if not args.origin_at_zero:
+        cmd.append("--no-origin-at-zero")
 
     print("[启动器] 命令:", " ".join(cmd))
     if args.background:
@@ -258,6 +271,29 @@ def _world_bbox(objects):
                 min_co[i] = min(min_co[i], co[i])
                 max_co[i] = max(max_co[i], co[i])
     return (min_co, max_co) if found else None
+
+
+def _normalize_to_origin(objects):
+    """把一组物体整体平移，使世界包围盒的最小角落在 (0,0)，其余坐标均为正。
+
+    用全局最小角 (min_x, min_y) 构造平移矩阵 T，左乘每个物体的 matrix_world：
+      - 仅平移、不旋转，家具朝向与地板顶点重映射均不受影响；
+      - 地板（单位阵 world matrix，几何已烤进顶点）同样被整体平移；
+      - Z 方向不动（地板已在 Z=0，家具坐在地板上），只把水平面挪到 (0,0) 起。
+    已在 (0,0) 附近（极小偏移）则不重复操作。
+    """
+    from mathutils import Matrix
+
+    bbox = _world_bbox(objects)
+    if bbox is None:
+        return
+    min_co, _ = bbox
+    if abs(min_co.x) < 1e-6 and abs(min_co.y) < 1e-6:
+        return
+    T = Matrix.Translation((-min_co.x, -min_co.y, 0.0))
+    for o in objects:
+        o.matrix_world = T @ o.matrix_world
+    bpy.context.view_layer.update()
 
 
 def _compose_matrix(pos, rot, scale):
@@ -319,26 +355,46 @@ def _load_category_info(path):
             mid = str(e.get("model_id") or e.get("uid") or "")
             if not mid:
                 continue
+            # 合并 super-category 与 category，便于按 super-category 过滤
+            # （如 3D-FUTURE 里吊灯/吸顶灯的 super-category 就是 'Lighting'）。
+            super_cat = (e.get("super-category") or e.get("super_category")
+                         or e.get("superCategory") or "")
             cat = (e.get("category") or e.get("category_zh") or
                    e.get("fine_grained_category") or e.get("category_en") or "")
-            out[mid] = str(cat)
+            combined = " / ".join(p for p in (super_cat, cat) if p)
+            out[mid] = str(combined)
     elif isinstance(data, dict):
         for mid, e in data.items():
             if isinstance(e, dict):
+                super_cat = (e.get("super-category") or e.get("super_category")
+                             or e.get("superCategory") or "")
                 cat = (e.get("category") or e.get("category_zh") or
                        e.get("fine_grained_category") or "")
-                out[str(mid)] = str(cat)
+                combined = " / ".join(p for p in (super_cat, cat) if p)
+                out[str(mid)] = str(combined)
     return out or None
 
 
 def _should_skip(model_id, category_info, skip_cats, skip_ids):
-    """判断某家具是否应跳过（吊灯等）。返回 (skip: bool, reason: str)。"""
+    """判断某家具是否应跳过（吊灯/照明类等）。返回 (skip: bool, reason: str)。
+
+    跳过判据（按优先级）：
+      1) 显式 model_id 命中 --skip-model-ids；
+      2) category_info 存在且 jid 对应的 super-category 为 "Lighting"
+         （字符串形如 "Lighting / Pendant Lamp"），直接取消放置；
+      3) category 字符串匹配 --skip-categories 任一子串（大小写不敏感）。
+    category_info 来自 model_info.json，其项含 super-category 字段。
+    """
     if model_id in skip_ids:
         return True, "explicit-id"
     if category_info:
         cat = category_info.get(str(model_id))
         if cat:
             low = cat.lower()
+            # 精确：super-category 为 Lighting（组合串首位，形如 "Lighting / ..."）
+            first = low.split(" / ")[0].strip()
+            if first == "lighting":
+                return True, f"super-category:Lighting"
             for s in skip_cats:
                 if s.lower() in low:
                     return True, f"category:{cat}"
@@ -725,17 +781,23 @@ def _configure_cycles(args):
         cyc.device = 'CPU'
 
 
-def _render_room_topdown(room_objects, out_path, args, stem):
-    """对给定房间物体渲染一张沿 -Y 俯视的正交图。
+def _render_topdown(objects, out_path, args, stem, hide_others=True):
+    """对给定物体集合渲染一张俯视正交图。
 
-    通过临时把其它物体 hide_render=True 来保证只渲染该房间。
+    对齐 blender_renderer.py 的拍摄/渲染方案：
+      - 自动判定竖直轴（三轴包围盒中范围最小者为竖直方向）；
+      - 水平中心正上方放置正交相机朝下拍，ortho_scale 取较大水平尺寸 × 留白；
+      - 斜 45° SUN 主光 + AREA 向下补光 + World 环境光，材质光影真实；
+      - 默认 Cycles 路径追踪 + 降噪；渲染后清理临时灯/相机。
+    hide_others=True 时（room 模式）临时隐藏其它物体，只渲染本集合；
+    hide_others=False 时（scene 模式）渲染场景内全部保留物体（整屋）。
     """
     from mathutils import Vector
     import math
 
     scene = bpy.context.scene
-    if not room_objects:
-        print(f"[构建器] 跳过空房间渲染 -> {out_path}")
+    if not objects:
+        print(f"[构建器] 跳过空渲染 -> {out_path}")
         return
 
     chosen_engine = _pick_engine(args)
@@ -744,30 +806,36 @@ def _render_room_topdown(room_objects, out_path, args, stem):
     if chosen_engine == "CYCLES":
         _configure_cycles(args)
 
-    # 视野只框住本房间
-    bbox = _world_bbox(room_objects)
+    # 视野只框住本集合
+    bbox = _world_bbox(objects)
     if bbox is None:
-        print(f"[构建器] 警告：房间无网格，跳过 -> {out_path}")
+        print(f"[构建器] 警告：集合无网格，跳过 -> {out_path}")
         scene.render.engine = old_engine
         return
     min_co, max_co = bbox
     ext = Vector((max_co.x - min_co.x, max_co.y - min_co.y, max_co.z - min_co.z))
     center = (min_co + max_co) / 2.0
-    # 水平面为 X–Y（Z 为上），取 X、Y 较大者作为视野边长
-    h_ext = max(ext.x, ext.y)
+    # 自动判定竖直轴：三轴包围盒中范围最小者为竖直方向，另两轴为水平方向。
+    # （本数据恒为 Z-up，竖直轴即 Z，等价于原来写死的 (0,0,1)，但更稳健。）
+    axes = ['X', 'Y', 'Z']
+    vert = min(axes, key=lambda a: ext[ord(a) - 88])
+    horiz = [a for a in axes if a != vert]
+    h_ext = max(ext[ord(a) - 88] for a in horiz)
     if h_ext <= 0:
         h_ext = 1.0
 
-    # 隔离：除本房间物体与相机/灯外，全部 hide_render
+    # 隔离：除本集合物体与相机/灯外，全部 hide_render（scene 模式不隐藏）
     all_objs = list(bpy.data.objects)
-    for o in all_objs:
-        if o in room_objects:
-            continue
-        o.hide_render = True
+    if hide_others:
+        for o in all_objs:
+            if o in objects:
+                continue
+            o.hide_render = True
     tmp_objects = []
 
     # —— 灯光：俯视专用（斜射 SUN + AREA 补光 + 环境光）——
-    up = Vector((0, 0, 1))  # 竖直轴 = Z（Blender Z-up）
+    up = {'X': Vector((1, 0, 0)), 'Y': Vector((0, 1, 0)),
+          'Z': Vector((0, 0, 1))}[vert]  # 竖直轴单位向量
     sun_data = bpy.data.lights.new("TopDownKeySun", type='SUN')
     sun_data.energy = 2.5
     sun_data.angle = 0.15
@@ -801,7 +869,7 @@ def _render_room_topdown(room_objects, out_path, args, stem):
         bg.inputs["Color"].default_value = (0.9, 0.9, 0.92, 1.0)
         bg.inputs["Strength"].default_value = 1.0
 
-    # —— 相机：水平中心正上方，沿 -Y 朝下，正交 ——
+    # —— 相机：水平中心正上方，沿竖直轴朝下，正交 ——
     cam_data = bpy.data.cameras.new("TopDownCam")
     cam = bpy.data.objects.new("TopDownCam", cam_data)
     scene.collection.objects.link(cam)
@@ -811,7 +879,7 @@ def _render_room_topdown(room_objects, out_path, args, stem):
     cam_data.clip_end = 1e6
     target = Vector(center)
     cam.location = Vector(center) + up * (h_ext * 4.0 + 10.0)
-    direction = target - cam.location          # 指向 -Y
+    direction = target - cam.location          # 指向 -竖直轴（俯视）
     cam.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
     scene.camera = cam
     tmp_objects.append(cam)
@@ -842,8 +910,9 @@ def _render_room_topdown(room_objects, out_path, args, stem):
     for o in tmp_objects:
         if o.name in bpy.data.objects:
             bpy.data.objects.remove(o, do_unlink=True)
-    for o in all_objs:
-        o.hide_render = False
+    if hide_others:
+        for o in all_objs:
+            o.hide_render = False
     scene.render.engine = old_engine
     scene.render.film_transparent = False
 
@@ -936,6 +1005,9 @@ def main_builder(args):
 
     total_rooms = 0
     total_rendered = 0
+    # 先构建所有「被保留」房间的可见物体，渲染阶段再按 scope 统一处理
+    # （整屋合一张 / 每间各一张），并在渲染前把坐标归一到 (0,0)。
+    kept_rooms = []  # 元素: (stem, rtype, ri, room_objects)
     for jf in json_files:
         stem = Path(jf).stem
         print(f"\n[构建器] === 处理 {Path(jf).name} ===")
@@ -990,10 +1062,39 @@ def main_builder(args):
                 print(f"  [房间] type={rtype} idx={ri}: 无可见物体，跳过渲染")
                 continue
 
-            if not args.no_render:
+            kept_rooms.append((stem, rtype, ri, room_objects))
+
+    # —— 渲染阶段：按 --topdown-scope 决定整屋 / 单间，并归一到 (0,0) ——
+    if not args.no_render and kept_rooms:
+        scope = args.topdown_scope if args.topdown_scope != "auto" else "scene"
+        if scope == "room":
+            # 每间各一张，各自平移到 (0,0)
+            for stem, rtype, ri, ros in kept_rooms:
+                if args.origin_at_zero:
+                    _normalize_to_origin(ros)
                 out_png = out_dir / f"{stem}_{_slug(rtype)}_{ri}_topdown.png"
-                _render_room_topdown(room_objects, out_png, args, stem)
+                _render_topdown(ros, out_png, args, stem, hide_others=True)
                 total_rendered += 1
+        else:  # scene：所有保留房间合一张整屋图，整体平移到 (0,0)
+            everything = [o for (_, _, _, ros) in kept_rooms for o in ros]
+            if args.origin_at_zero:
+                _normalize_to_origin(everything)
+            if len(json_files) == 1:
+                scene_stem = Path(json_files[0]).stem
+            else:
+                scene_stem = "scene"
+            # 文件名带房间类型后缀：只保留单类型（如仅 MasterBedroom）时，
+            # 追加 _masterbedroom 以区分；多类型则把类型用 '+' 连接。
+            slugs = sorted({_slug(rtype) for (_, rtype, _, _) in kept_rooms})
+            if slugs:
+                suffix = "_".join(slugs)          # 单类型：masterbedroom；多类型：a_b
+                out_name = f"{scene_stem}_{suffix}_topdown.png"
+            else:
+                out_name = f"{scene_stem}_topdown.png"
+            out_png = out_dir / out_name
+            _render_topdown(everything, out_png, args, scene_stem,
+                            hide_others=False)
+            total_rendered += 1
 
     # 保存 .blend（供检查；不渲染也不影响已输出的 PNG）。
     # 注意：当前只摆放了被筛选出的房间，故文件名去掉 "allrooms" 以名实相符。
